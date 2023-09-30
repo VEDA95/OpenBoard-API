@@ -1,0 +1,26 @@
+{
+  "name": "OpenBoard-API",
+  "version": "1.0.0",
+  "description": "Rest API backend for the Open Baord Kanban Board Project.",
+  "main": "./dist/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -p tsconfig.json",
+    "dev": "ts-node ./src/server.ts",
+    "start": "node ./dist/server.js"
+  },
+  "keywords": [
+    "Kanabn",
+    "REST"
+  ],
+  "author": "Stefan Netterfield",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "@types/node": "^20.8.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "fastify": "^4.23.2"
+  }
+}
