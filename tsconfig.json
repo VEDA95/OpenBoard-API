@@ -17,11 +17,19 @@
     "lib": [
       "ESNext"
     ],
+    "sourceMap": true,
     "sourceRoot": "./src",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "declaration": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/**/*.d.ts"
+    ]
   },
   "include": [
-    "./src/**"
+    "./src/**/*.ts",
+    "./src/**/*.tsx",
+    "./src/**/*.d.ts"
   ],
   "exclude": [
     "./node_modules"
