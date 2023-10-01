@@ -33,7 +33,7 @@ export default async function(err: FastifyError, request: FastifyRequest, respon
     };
 
     if(err.statusCode === 403) return {
-        code: 401,
+        code: 403,
         error: 'Insufficient Permissions...'
     };
 
