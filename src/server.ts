@@ -3,10 +3,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import fastify from 'fastify';
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import db from './db/index';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import type { DBOptions } from './db/index';
 
 const server: FastifyInstance = fastify();
 
+server.register<DBOptions>(db, { db_uri: process.env.DATABASE_URI });
 server.get('/', async (request: FastifyRequest, response: FastifyReply): Promise<string> => {
     return 'Hello World!';
 });
