@@ -14,6 +14,7 @@ export interface EnvLoggerItem {
                 maxLength?: number;
                 sync?: boolean;
             };
+            mkdir?: boolean;
             host?: string;
             colorize?: boolean;
         }
@@ -37,7 +38,14 @@ const envToLogger: EnvLogger = {
         }
     },
     production: {
-        level: 'error'
+        level: 'error',
+        transport: {
+            target: 'pino/file',
+            options: {
+                destination: './logs/open_board_api.log',
+                mkdir: true
+            }
+        }
     }
 };
 
