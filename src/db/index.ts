@@ -19,6 +19,7 @@ export default fp(async (fastify: FastifyInstance, options: DBOptions): Promise<
     try {
         const client: PoolClient = await pool.connect();
 
+        fastify.decorate('pool', pool);
         fastify.decorate('db', client);
         return;
 
