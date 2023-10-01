@@ -42,7 +42,7 @@ const envToLogger: EnvLogger = {
         transport: {
             target: 'pino/file',
             options: {
-                destination: './logs/open_board_api.log',
+                destination: process.env.PRODUCTION_LOG_PATH ?? './logs/open_board_api.log',
                 mkdir: true
             }
         }
