@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import fastify from 'fastify';
-import routeFactory from './routes';
+import routeFactory from './routes/index';
 import type { FastifyInstance } from 'fastify';
 
 const server: FastifyInstance = fastify();
