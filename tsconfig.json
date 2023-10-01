@@ -17,8 +17,7 @@
     "lib": [
       "ESNext"
     ],
-    "sourceMap": true,
-    "sourceRoot": "./src",
+    "rootDir": "./src",
     "outDir": "./dist",
     "declaration": true,
     "typeRoots": [
