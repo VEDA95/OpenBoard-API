@@ -3,9 +3,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import fastify from 'fastify';
+import envLoggerConfig from './logs';
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 
-const server: FastifyInstance = fastify();
+const isProduction: boolean = process.env.NODE_ENV === 'production';
+const server: FastifyInstance = fastify({
+    logger: isProduction ? envLoggerConfig.production : envLoggerConfig.development,
+});
 
 server.get('/', async (request: FastifyRequest, response: FastifyReply): Promise<string> => {
     return 'Hello World!';
