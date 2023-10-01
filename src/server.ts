@@ -3,17 +3,19 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import fastify from 'fastify';
+import errorHandler from './error';
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 
 const server: FastifyInstance = fastify();
 
+server.setErrorHandler(errorHandler);
 server.get('/', async (request: FastifyRequest, response: FastifyReply): Promise<string> => {
     return 'Hello World!';
 });
 
 server.listen({port: process.env.PORT, host: process.env.HOST}, (err: Error | null, address: string): void => {
     if (err) {
-        console.error(err);
+        server.log.error(err);
         process.exit(1);
     }
 
