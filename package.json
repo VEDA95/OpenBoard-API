@@ -17,11 +17,14 @@
   "license": "GPL-3.0",
   "devDependencies": {
     "@types/node": "^20.8.0",
+    "@types/pg": "^8.10.3",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   },
   "dependencies": {
     "dotenv": "^16.3.1",
-    "fastify": "^4.23.2"
+    "fastify": "^4.23.2",
+    "fastify-plugin": "^4.5.1",
+    "pg": "^8.11.3"
   }
 }
