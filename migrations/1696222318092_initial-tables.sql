@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS "open_board_user_password_reset_token" (
 );
 
 CREATE TABLE IF NOT EXISTS "open_board_user_email_verification_token" (
-  "id" UUID UNIQUE PRIMARY KEY,
+  "id" UUID UNIQUE PRIMARY KEY DEFAULT uuid_generate_v4(),
   "user_id" UUID NOT NULL,
   "date_created" TIMESTAMP NOT NULL DEFAULT now(),
   "expires_on" TIMESTAMP NOT NULL
@@ -131,6 +131,8 @@ ALTER TABLE "open_board_multi_auth_method" ADD FOREIGN KEY ("user_id") REFERENCE
 ALTER TABLE "open_board_user_password_reset_token" ADD FOREIGN KEY ("user_id") REFERENCES "open_board_user" ("id");
 ALTER TABLE "open_board_user_email_verification_token" ADD FOREIGN KEY ("user_id") REFERENCES "open_board_user" ("id");
 ALTER TABLE "open_board_user" ADD FOREIGN KEY ("external_provider_id") REFERENCES "open_board_external_auth_provider" ("id");
+
+CREATE UNIQUE INDEX one_row_only_uidx ON "open_board_auth_settings" (( true ));
 
 -- Down Migration
 DROP TABLE "open_board_auth_settings" CASCADE;
