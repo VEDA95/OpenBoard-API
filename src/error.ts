@@ -22,6 +22,11 @@ export function createError(code: number, message?: string): HandlerError {
 export default async function(err: FastifyError, request: FastifyRequest, response: FastifyReply): Promise<ErrorResponse> {
     response.status(err.statusCode as number);
 
+    if(err.statusCode === 400 && (err.validation != null && err.validation.length > 0)) return {
+        code: 400,
+        error: err.validation[0].message
+    };
+
     if(err.statusCode === 400) return {
         code: 400,
         error: err.message ?? 'Bad Request provided...'
