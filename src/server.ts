@@ -12,6 +12,7 @@ if(isProduction) {
 }
 
 import fastify from 'fastify';
+import ajvErrors from 'ajv-errors';
 import routeFactory from './routes/index';
 import errorHandler from './error';
 import envLoggerConfig from './logs';
@@ -20,6 +21,12 @@ import type { FastifyInstance } from 'fastify';
 import type { DBOptions } from './db/index';
 
 const server: FastifyInstance = fastify({
+    ajv: {
+        customOptions: {
+            allErrors: true,
+        },
+        plugins: [ajvErrors]
+    },
     logger: isProduction ? envLoggerConfig.production : envLoggerConfig.development,
 });
 
