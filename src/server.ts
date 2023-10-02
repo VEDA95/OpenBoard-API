@@ -14,11 +14,14 @@ if(isProduction) {
 import fastify from 'fastify';
 import routeFactory from './routes/index';
 import errorHandler from './error';
+import envLoggerConfig from './logs';
 import db from './db/index';
 import type { FastifyInstance } from 'fastify';
 import type { DBOptions } from './db/index';
 
-const server: FastifyInstance = fastify();
+const server: FastifyInstance = fastify({
+    logger: isProduction ? envLoggerConfig.production : envLoggerConfig.development,
+});
 
 server.setErrorHandler(errorHandler);
 server.register<DBOptions>(db, { db_uri: process.env.DATABASE_URI });
