@@ -4,10 +4,12 @@ dotenv.config();
 
 import fastify from 'fastify';
 import routeFactory from './routes/index';
+import errorHandler from './error';
 import type { FastifyInstance } from 'fastify';
 
 const server: FastifyInstance = fastify();
 
+server.setErrorHandler(errorHandler);
 server.register(routeFactory, {
     apiPrefix: '/api',
     authPrefix: '/auth',
@@ -16,7 +18,7 @@ server.register(routeFactory, {
 
 server.listen({port: process.env.PORT, host: process.env.HOST}, (err: Error | null, address: string): void => {
     if (err) {
-        console.error(err);
+        server.log.error(err);
         process.exit(1);
     }
 
