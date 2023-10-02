@@ -1,0 +1,5 @@
+{
+    "db": {
+      "url": "postgres://Testuser:GNX-0093@localhost:5432/openboardbackend"
+    }
+  }

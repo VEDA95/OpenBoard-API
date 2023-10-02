@@ -5,6 +5,10 @@
   "main": "./dist/server.js",
   "scripts": {
     "test": "mocha --require ts-node/register ./tests/**/*.ts",
+    "migrate:up": "node-pg-migrate up -- -f ./migrations/config.json -m ./migrations",
+    "migrate:down": "node-pg-migrate down -- -f ./migrations/config.json -m ./migrations",
+    "migrate:redo": "node-pg-migrate redo -- -f ./migrations/config.json -m ./migrations redo",
+    "migrate:create": "node-pg-migrate create -- -f ./migrations/config.json -j sql -m ./migrations",
     "build": "tsc -p tsconfig.json",
     "dev": "NODE_ENV=development ts-node --files ./src/server.ts",
     "start": "NODE_ENV=production node ./dist/server.js"
@@ -31,6 +35,7 @@
     "dotenv": "^16.3.1",
     "fastify": "^4.23.2",
     "fastify-plugin": "^4.5.1",
+    "node-pg-migrate": "^6.2.2",
     "pg": "^8.11.3"
   }
 }
