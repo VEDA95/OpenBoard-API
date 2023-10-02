@@ -1,11 +1,14 @@
 import dotenv from 'dotenv';
 
 dotenv.config();
-if(process.env.NODE_ENV === 'development') {
-    dotenv.config({path: './.env.development'});
+
+const isProduction: boolean = process.env.NODE_ENV === 'production';
+
+if(isProduction) {
+    dotenv.config({path: './.env.production'});
 
 } else {
-    dotenv.config({path: './.env.production'});
+    dotenv.config({path: './.env.development'});
 }
 
 import fastify from 'fastify';
