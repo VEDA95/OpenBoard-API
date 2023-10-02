@@ -4,5 +4,6 @@ namespace NodeJS {
         NODE_ENV: string;
         PORT: number;
         HOST: string;
+        PRODUCTION_LOG_PATH?: string;
     }
 }

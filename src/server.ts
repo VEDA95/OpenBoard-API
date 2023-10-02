@@ -2,11 +2,12 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const isProduction: boolean = process.env.NODE_ENV === 'production';
+
 import fastify from 'fastify';
 import envLoggerConfig from './logs';
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 
-const isProduction: boolean = process.env.NODE_ENV === 'production';
 const server: FastifyInstance = fastify({
     logger: isProduction ? envLoggerConfig.production : envLoggerConfig.development,
 });
