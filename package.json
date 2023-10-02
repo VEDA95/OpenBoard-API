@@ -4,7 +4,7 @@
   "description": "Rest API backend for the Open Baord Kanban Board Project.",
   "main": "./dist/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha --require ts-node/register ./tests/**/*.ts",
     "build": "tsc -p tsconfig.json",
     "dev": "NODE_ENV=development ts-node --files ./src/server.ts",
     "start": "NODE_ENV=production node ./dist/server.js"
@@ -16,8 +16,13 @@
   "author": "Stefan Netterfield",
   "license": "GPL-3.0",
   "devDependencies": {
+    "@types/chai": "^4.3.6",
+    "@types/mocha": "^10.0.2",
     "@types/node": "^20.8.0",
     "@types/pg": "^8.10.3",
+    "chai": "^4.3.10",
+    "chai-http": "^4.4.0",
+    "mocha": "^10.2.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   },
