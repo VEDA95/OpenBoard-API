@@ -1,6 +1,12 @@
 import dotenv from 'dotenv';
 
 dotenv.config();
+if(process.env.NODE_ENV === 'development') {
+    dotenv.config({path: './.env.development'});
+
+} else {
+    dotenv.config({path: './.env.production'});
+}
 
 import fastify from 'fastify';
 import db from './db/index';
@@ -8,7 +14,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import type { DBOptions } from './db/index';
 
 const server: FastifyInstance = fastify();
-
+console.log(process.env);
 server.register<DBOptions>(db, { db_uri: process.env.DATABASE_URI });
 server.get('/', async (request: FastifyRequest, response: FastifyReply): Promise<string> => {
     return 'Hello World!';

@@ -1,7 +1,7 @@
 namespace NodeJS {
     interface ProcessEnv {
         [key: string]: string | undefined;
-        NODE_ENV: string;
+        NODE_ENV: 'development' | 'production';
         PORT: number;
         HOST: string;
         DATABASE_URI: string;
