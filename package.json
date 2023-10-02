@@ -5,10 +5,10 @@
   "main": "./dist/server.js",
   "scripts": {
     "test": "mocha --require ts-node/register ./tests/**/*.ts",
-    "migrate:up": "node-pg-migrate up ${N} -f ./migrations/config.json -m ./migrations",
-    "migrate:down": "node-pg-migrate down ${N} -f ./migrations/config.json -m ./migrations",
-    "migrate:redo": "node-pg-migrate redo ${N} -f ./migrations/config.json -m ./migrations redo",
-    "migrate:create": "node-pg-migrate create ${N} -f ./migrations/config.json -j sql -m ./migrations",
+    "migrate:up": "node-pg-migrate up ${2:N} -d DATABASE_URI -m ./migrations --envPath $1",
+    "migrate:down": "node-pg-migrate down ${2:N} -d DATABASE_URI -m ./migrations --envPath $1",
+    "migrate:redo": "node-pg-migrate redo ${2:N} -d DATABASE_URI -m ./migrations --envPath $1",
+    "migrate:create": "node-pg-migrate create ${N} -j sql -m ./migrations",
     "build": "tsc -p tsconfig.json",
     "dev": "NODE_ENV=development ts-node --files ./src/server.ts",
     "start": "NODE_ENV=production node ./dist/server.js"
