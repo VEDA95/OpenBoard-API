@@ -4,7 +4,7 @@ import { parseUsers, parseUser } from '../../db/parsers/user';
 import { hashPassword } from '../../auth/password';
 import type { FastifyInstance, FastifyPluginOptions, FastifyRequest, FastifyReply} from 'fastify';
 import type { DoneCallback } from '../types/done';
-import type { Role, User } from '../types/user';
+import type { User } from '../types/user';
 import type { OKResponse } from '../types/response';
 import type { AdminUserCreateSchema, AdminUserUpdateSchema, UserParamsSchema} from '../../schema/user';
 import type { QueryResult, QueryResultRow } from 'pg';
