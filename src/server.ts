@@ -21,6 +21,7 @@ import type { FastifyInstance } from 'fastify';
 import type { DBOptions } from './db/index';
 
 const server: FastifyInstance = fastify({
+    ignoreTrailingSlash: true,
     ajv: {
         customOptions: {
             allErrors: true,

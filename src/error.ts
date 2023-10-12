@@ -1,10 +1,5 @@
 import type { FastifyError, FastifyRequest, FastifyReply } from 'fastify';
-
-export interface ErrorResponse {
-    code: number;
-    error?: string;
-    errors?: Array<string>;
-}
+import type { ErrorResponse } from './routes/types/response';
 
 export interface HandlerError extends Error {
     statusCode?: number;

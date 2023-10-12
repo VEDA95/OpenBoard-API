@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS "open_board_user" (
   "last_name" VARCHAR(255),
   "dark_mode" BOOLEAN NOT NULL DEFAULT FALSE,
   "hashed_password" TEXT,
-  "password_salt" VARCHAR(255),
   "date_created" TIMESTAMP NOT NULL DEFAULT now(),
   "date_updated" TIMESTAMP,
   "last_login" TIMESTAMP,
@@ -20,7 +19,7 @@ CREATE TABLE IF NOT EXISTS "open_board_user" (
   "reset_password_on_login" BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE "open_board_file_upload" (
+CREATE TABLE IF NOT EXISTS "open_board_file_upload" (
   "id" UUID UNIQUE PRIMARY KEY DEFAULT uuid_generate_v4(),
   "user_id" UUID NOT NULL,
   "name" VARCHAR(255) NOT NULL,
