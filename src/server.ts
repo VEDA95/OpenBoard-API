@@ -1,4 +1,4 @@
-import build from './build';
+import build from './lib/build';
 import type { FastifyInstance } from 'fastify';
 
 const server: FastifyInstance = build();

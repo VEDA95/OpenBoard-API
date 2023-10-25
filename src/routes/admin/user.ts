@@ -1,13 +1,13 @@
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { AdminUserCreate, AdminUserUpdate, UserParams } from '../../schema/user';
-import { parseUsers, parseUser } from '../../db/parsers/user';
-import { hashPassword } from '../../auth/password';
-import { createQuery, createManyToManyQuery } from '../../db/queries/create';
-import { selectUsersQuery, selectUsersRolesQuery, selectRolesPermissionsQuery, selectUserQuery, selectUserRolesQuery, selectRolePermissionsQuery } from '../../db/queries/user';
+import { parseUsers, parseUser } from '../../lib/db/parsers/user';
+import { hashPassword } from '../../lib/auth/password';
+import { createQuery, createManyToManyQuery } from '../../lib/db/queries/create';
+import { selectUsersQuery, selectUsersRolesQuery, selectRolesPermissionsQuery, selectUserQuery, selectUserRolesQuery, selectRolePermissionsQuery } from '../../lib/db/queries/user';
 import type { FastifyInstance, FastifyPluginOptions, FastifyRequest } from 'fastify';
-import type { DoneCallback } from '../types/done';
-import type { User } from '../types/user';
-import type { OKResponse } from '../types/response';
+import type { DoneCallback } from '../../types/done';
+import type { User } from '../../types/user';
+import type { OKResponse } from '../../types/response';
 import type { AdminUserCreateSchema, AdminUserUpdateSchema, UserParamsSchema} from '../../schema/user';
 import type { QueryResult, QueryResultRow } from 'pg';
 
