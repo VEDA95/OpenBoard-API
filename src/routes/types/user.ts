@@ -17,8 +17,8 @@ export interface User {
     last_login: Date | null;
     username: string;
     email: string;
-    first_name: string;
-    last_name: string;
+    first_name: string | null;
+    last_name: string | null;
     enabled: boolean;
     dark_mode: boolean;
     thumbnail: null;

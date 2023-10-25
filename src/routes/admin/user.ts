@@ -2,58 +2,23 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 import { AdminUserCreate, AdminUserUpdate, UserParams } from '../../schema/user';
 import { parseUsers, parseUser } from '../../db/parsers/user';
 import { hashPassword } from '../../auth/password';
-import type { FastifyInstance, FastifyPluginOptions, FastifyRequest, FastifyReply} from 'fastify';
+import { createQuery, createManyToManyQuery } from '../../db/queries/create';
+import { selectUsersQuery, selectUsersRolesQuery, selectRolesPermissionsQuery, selectUserQuery, selectUserRolesQuery, selectRolePermissionsQuery } from '../../db/queries/user';
+import type { FastifyInstance, FastifyPluginOptions, FastifyRequest } from 'fastify';
 import type { DoneCallback } from '../types/done';
 import type { User } from '../types/user';
 import type { OKResponse } from '../types/response';
 import type { AdminUserCreateSchema, AdminUserUpdateSchema, UserParamsSchema} from '../../schema/user';
 import type { QueryResult, QueryResultRow } from 'pg';
 
-export default (fastify: FastifyInstance, options: FastifyPluginOptions, done: DoneCallback): void => {
-    fastify.get('/users', async (request: FastifyRequest, response: FastifyReply): Promise<OKResponse<Array<User>>> => {
+export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCallback): void => {
+    fastify.get('/users', async (request: FastifyRequest, _): Promise<OKResponse<Array<User>>> => {
         try {
             await fastify.db.query('BEGIN;');
 
-            const users_query: QueryResult = await fastify.db.query(`
-                SELECT
-                    usr.id AS usr_id,
-                    usr.username AS usr_username,
-                    usr.email AS usr_email,
-                    usr.first_name AS usr_first_name,
-                    usr.last_name AS usr_last_name,
-                    usr.enabled AS usr_enabled,
-                    usr.date_created AS usr_date_created,
-                    usr.date_updated AS usr_date_updated,
-                    usr.last_login AS usr_last_login,
-                    usr.dark_mode AS usr_dark_mode,
-                    file_upload.id AS file_upload_id,
-                    file_upload.name AS file_upload_name,
-                    file_upload.date_created AS file_upload_date_created,
-                    file_upload.date_updated AS file_upload_date_updated,
-                    file_upload.file_size AS file_upload_file_size,
-                    file_upload.additional_details AS file_upload_additional_details,
-                    external_auth.id AS external_auth_id,
-                    external_auth.name AS external_auth_name,
-                    external_auth.default_login_method AS external_auth_default_login
-                FROM open_board_user usr
-                LEFT JOIN open_board_file_upload file_upload ON file_upload.id = usr.thumbnail
-                LEFT JOIN open_board_external_auth_provider external_auth ON external_auth.id = usr.external_provider_id;
-            `);
-            const user_roles_query: QueryResult = await fastify.db.query(`
-                SELECT
-                    user_role.user_id,
-                    role.*
-                FROM open_board_user_roles user_role
-                JOIN open_board_role role ON role.id = user_role.role_id;
-            `);
-            const role_permissions_query: QueryResult = await fastify.db.query(`
-                SELECT
-                    role_permission.role_id,
-                    permission.*
-                FROM open_board_role_permissions role_permission
-                JOIN open_board_role_permission permission ON permission.id = role_permission.permission_id;
-            `);
-
+            const users_query: QueryResult = await fastify.db.query(selectUsersQuery);
+            const user_roles_query: QueryResult = await fastify.db.query(selectUsersRolesQuery);
+            const role_permissions_query: QueryResult = await fastify.db.query(selectRolesPermissionsQuery);
 
             await fastify.db.query('COMMIT;');
 
@@ -76,55 +41,15 @@ export default (fastify: FastifyInstance, options: FastifyPluginOptions, done: D
         schema: {
             params: zodToJsonSchema(UserParams, {errorMessages: true})
         }
-    }, async (request: FastifyRequest<{Params: UserParamsSchema}>, response: FastifyReply): Promise<OKResponse<User>> => {
+    }, async (request: FastifyRequest<{Params: UserParamsSchema}>, _): Promise<OKResponse<User>> => {
         const { id } = request.params;
 
         try {
             await fastify.db.query('BEGIN;');
 
-            const user_query: QueryResult = await fastify.db.query(`
-                SELECT
-                    usr.id AS usr_id,
-                    usr.username AS usr_username,
-                    usr.email AS usr_email,
-                    usr.first_name AS usr_first_name,
-                    usr.last_name AS usr_last_name,
-                    usr.enabled AS usr_enabled,
-                    usr.date_created AS usr_date_created,
-                    usr.date_updated AS usr_date_updated,
-                    usr.last_login AS usr_last_login,
-                    usr.dark_mode AS usr_dark_mode,
-                    file_upload.id AS file_upload_id,
-                    file_upload.name AS file_upload_name,
-                    file_upload.date_created AS file_upload_date_created,
-                    file_upload.date_updated AS file_upload_date_updated,
-                    file_upload.file_size AS file_upload_file_size,
-                    file_upload.additional_details AS file_upload_additional_details,
-                    external_auth.id AS external_auth_id,
-                    external_auth.name AS external_auth_name,
-                    external_auth.default_login_method AS external_auth_default_login
-                FROM open_board_user usr
-                LEFT JOIN open_board_file_upload file_upload ON file_upload.id = usr.thumbnail
-                LEFT JOIN open_board_external_auth_provider external_auth ON external_auth.id = usr.external_provider_id
-                WHERE usr.id = $1;
-            `, [id]);
-            const user_roles_query: QueryResult = await fastify.db.query(`
-                SELECT
-                    user_role.user_id,
-                    role.*
-                FROM open_board_user_roles user_role
-                JOIN open_board_role role ON role.id = user_role.role_id
-                WHERE user_role.user_id = $1;
-            `, [id]);
-            const role_permissions_query: QueryResult = await fastify.db.query(`
-                SELECT
-                    role_permission.role_id,
-                    permission.*
-                FROM open_board_role_permissions role_permission
-                JOIN open_board_role_permission permission ON permission.id = role_permission.permission_id
-                WHERE role_permission.role_id = ANY($1);
-            `, [user_roles_query.rows.map((item: QueryResultRow): string => item.id)]);
-
+            const user_query: QueryResult = await fastify.db.query(selectUserQuery, [id]);
+            const user_roles_query: QueryResult = await fastify.db.query(selectUserRolesQuery, [id]);
+            const role_permissions_query: QueryResult = await fastify.db.query(selectRolePermissionsQuery, [user_roles_query.rows.map((item: QueryResultRow): string => item.id)]);
 
             await fastify.db.query('COMMIT;');
 
@@ -145,7 +70,7 @@ export default (fastify: FastifyInstance, options: FastifyPluginOptions, done: D
         schema: {
             body: zodToJsonSchema(AdminUserCreate, {errorMessages: true})
         }
-    }, async (request: FastifyRequest<{Body: AdminUserCreateSchema}>, response: FastifyReply): Promise<OKResponse<User>> => {
+    }, async (request: FastifyRequest<{Body: AdminUserCreateSchema}>, _): Promise<OKResponse<User>> => {
         const {
             username,
             email,
@@ -191,17 +116,13 @@ export default (fastify: FastifyInstance, options: FastifyPluginOptions, done: D
             values = [...values, external_provider_id];
         }
 
-        const sql_value_indexes: Array<string> = columns.map((item: string, index: number): string => `$${index + 1}`);
-
         try {
 
             let user_roles: QueryResult | undefined;
             let role_permissions: QueryResult | undefined;
 
             await fastify.db.query('BEGIN;');
-            await fastify.db.query(`
-                INSERT INTO open_board_user (${columns.join(', ')}) VALUES (${sql_value_indexes.join(', ')});
-            `, values);
+            await fastify.db.query(createQuery('open_board_user', columns), values);
 
             const user_query: QueryResult = await fastify.db.query(`
                 SELECT
@@ -232,45 +153,12 @@ export default (fastify: FastifyInstance, options: FastifyPluginOptions, done: D
             const usr_id: string = user_query.rows[0].usr_id;
 
             if(roles != null && roles.length > 0) {
-                const user_roles_insert_values: Array<Array<string>> = roles.map((item: string): Array<string> => ([usr_id, item]));
-                let values_incrementor: number = 0;
+                const user_roles_insert_values: Array<[string, string]> = roles.map((item: string): [string, string] => ([usr_id, item]));
 
-                await fastify.db.query(`
-                    INSERT INTO open_board_user_roles (user_id, role_id)
-                    VALUES
-                        ${user_roles_insert_values.map((item: Array<string>, index: number): string => {
-                            const index1: number = index + values_incrementor + 1;
-                            const index2: number = index + values_incrementor + 2;
-                            let value_template_str: string = `($${index1}, $${index2})`;
+                await fastify.db.query(createManyToManyQuery('open_board_user_roles', 'user_id', 'role_id', user_roles_insert_values), user_roles_insert_values);
 
-                            if(index === user_roles_insert_values.length - 1) {
-                                value_template_str += ';';
-                            } else {
-                                value_template_str += ', ';
-                            }
-
-                            ++values_incrementor
-
-                            return value_template_str;
-                        })}
-                `, user_roles_insert_values);
-
-                user_roles = await fastify.db.query(`
-                    SELECT
-                        user_role.user_id,
-                        role.*
-                    FROM open_board_user_roles user_role
-                    JOIN open_board_role role ON role.id = user_role.role_id
-                    WHERE user_role.user_id = $1;
-                `, [usr_id]);
-                role_permissions = await fastify.db.query(`
-                    SELECT
-                        role_permission.role_id,
-                        permission.*
-                    FROM open_board_role_permissions role_permission
-                    JOIN open_board_role_permission permission ON permission.id = role_permission.permission_id
-                    WHERE role_permission.role_id = ANY($1);
-                `, [user_roles.rows.map((item: QueryResultRow): string => item.id)]);
+                user_roles = await fastify.db.query(selectUserRolesQuery, [usr_id]);
+                role_permissions = await fastify.db.query(selectRolePermissionsQuery, [user_roles.rows.map((item: QueryResultRow): string => item.id)]);
             }
 
             await fastify.db.query('COMMIT;');
@@ -291,14 +179,21 @@ export default (fastify: FastifyInstance, options: FastifyPluginOptions, done: D
 
     fastify.patch('/users/:id', {
         schema: {
+            params: zodToJsonSchema(UserParams, {errorMessages: true}),
             body: zodToJsonSchema(AdminUserUpdate, {errorMessages: true})
         }
-    }, async (request: FastifyRequest<{Body: AdminUserUpdateSchema}>, response: FastifyReply): Promise<string> => {
-        return ``;
+    }, async (request: FastifyRequest<{Body: AdminUserUpdateSchema}>, _): Promise<OKResponse<null>> => {
+        return {
+            code: 200,
+            data: null
+        };
     });
 
-    fastify.delete('/users/:id', async (request: FastifyRequest<{Body: AdminUserUpdateSchema}>, response: FastifyReply): Promise<string> => {
-        return ``;
+    fastify.delete('/users/:id', async (request: FastifyRequest<{Body: AdminUserUpdateSchema}>, _): Promise<OKResponse<null>> => {
+        return {
+            code: 200,
+            data: null
+        };
     });
 
     done();
