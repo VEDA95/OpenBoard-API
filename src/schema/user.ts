@@ -46,7 +46,7 @@ export const PublicUserPasswordReset = z.object({
 });
 
 export const UserParams = z.object({
-    id: z.string().min(1, 'User ID must be provided...')
+    id: z.string().min(1, 'User ID must be provided...').uuid('Value must be a valid Id...')
 });
 
 export type AdminUserCreateSchema = z.infer<typeof AdminUserCreate>;

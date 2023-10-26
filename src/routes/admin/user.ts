@@ -83,7 +83,7 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
             external_provider_id,
             roles
         } = request.body;
-        let columns: Array<string> = ['username', 'email', 'password'];
+        let columns: Array<string> = ['username', 'email', 'hashed_password'];
         let values: Array<string | boolean> = [username, email, await hashPassword(password)];
 
         if(first_name != null) {
@@ -166,8 +166,8 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
             const user: User = parseUser(user_query.rows[0], user_roles?.rows ?? [], role_permissions?.rows ?? []);
 
             return {
-                code: 200,
-                message: `User: <user> was successfully created!`,
+                code: 201,
+                message: `User: ${user.username} was successfully created!`,
                 data: user
             };
 
