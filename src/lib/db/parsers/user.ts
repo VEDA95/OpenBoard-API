@@ -87,9 +87,9 @@ export function parseUsers(user_data: QueryRows, role_data: QueryRows, permissio
         dark_mode: item.usr_dark_mode,
         external_provider: null,
         thumbnail: null,
-        roles: roles.map((roleRelation: Relation): Role | void => {
-            if(roleRelation.ids.includes(item.usr_id)) return roleRelation.role;
-        }) as Array<Role>
+        roles: roles
+                .filter((roleRelation: Relation): boolean => roleRelation.ids.includes(item.usr_id))
+                .map((roleRelation: Relation): Role => roleRelation.role as Role)
     }));
 }
 
@@ -109,8 +109,8 @@ export function parseUser(user_data: QueryResultRow, role_data: QueryRows, permi
         dark_mode: user_data.usr_dark_mode,
         external_provider: null,
         thumbnail: null,
-        roles: roles.map((roleRelation: Relation): Role | void => {
-            if(roleRelation.ids.includes(user_data.usr_id)) return roleRelation.role;
-        }) as Array<Role>
+        roles: roles
+                .filter((roleRelation: Relation): boolean => roleRelation.ids.includes(user_data.usr_id))
+                .map((roleRelation: Relation): Role => roleRelation.role as Role)
     }
 }
