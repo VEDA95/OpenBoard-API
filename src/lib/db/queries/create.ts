@@ -5,26 +5,17 @@ export function createQuery(table_name: string, columns: Array<string>): string 
     return `INSERT INTO ${table_name} (${columns.join(', ')}) VALUES (${sql_value_indexes.join(', ')});`;
 }
 
-export function createManyToManyQuery(table_name: string, id_name_1: string, id_name_2: string, values: Array<[string, string]>): string {
-    let values_incrementor: number = 0;
+export function createManyToManyQuery(table_name: string, id_name_1: string, id_name_2: string, valueLength: number): string {
+    let valuesTemplate: string = '';
+    const indexLimit: number = valueLength / 2;
 
-    return `
-        INSERT INTO ${table_name} (${id_name_1}, ${id_name_2})
-        VALUES
-            ${values.map((_, index: number): string => {
-                const index1: number = index + values_incrementor + 1;
-                const index2: number = index + values_incrementor + 2;
-                let value_template_str: string = `($${index1}, $${index2})`;
+    for(let index: number = 0; index < indexLimit; index += 2) {
+        const index1: number = index + 1;
+        const index2: number = index + 2;
 
-                if(index === values.length - 1) {
-                    value_template_str += ';';
-                } else {
-                    value_template_str += ', ';
-                }
+        valuesTemplate += `($${index1}, $${index2})`;
+        valuesTemplate += index === (valueLength - 2) ? ';' : ',';
+    }
 
-                ++values_incrementor;
-
-                return value_template_str;
-            })}
-    `;
+    return `INSERT INTO ${table_name} (${id_name_1}, ${id_name_2}) VALUES ${valuesTemplate}`;
 }

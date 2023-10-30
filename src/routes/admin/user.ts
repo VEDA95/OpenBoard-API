@@ -1,3 +1,4 @@
+import { createError } from '../../lib/error';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { AdminUserCreate, AdminUserUpdate, UserParams } from '../../schema/user';
 import { parseUsers, parseUser } from '../../lib/db/parsers/user';
@@ -31,7 +32,8 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
             };
 
         } catch(err: any) {
-            request.log.error(err.message);
+            await fastify.db.query('ROLLBACK;');
+            request.log.error(err);
             throw err;
         }
 
@@ -61,7 +63,8 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
             };
 
         } catch(err: any) {
-            request.log.error(err.message);
+            await fastify.db.query('ROLLBACK;');
+            request.log.error(err);
             throw err;
         }
     });
@@ -153,9 +156,13 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
             const usr_id: string = user_query.rows[0].usr_id;
 
             if(roles != null && roles.length > 0) {
-                const user_roles_insert_values: Array<[string, string]> = roles.map((item: string): [string, string] => ([usr_id, item]));
+                const user_roles_insert_values: Array<string> = roles.reduce((accumValue: Array<string>, currentValue: string): Array<string> => ([
+                    ...accumValue,
+                    usr_id,
+                    currentValue
+                ]), []);
 
-                await fastify.db.query(createManyToManyQuery('open_board_user_roles', 'user_id', 'role_id', user_roles_insert_values), user_roles_insert_values);
+                await fastify.db.query(createManyToManyQuery('open_board_user_roles', 'user_id', 'role_id', user_roles_insert_values.length), user_roles_insert_values);
 
                 user_roles = await fastify.db.query(selectUserRolesQuery, [usr_id]);
                 role_permissions = await fastify.db.query(selectRolePermissionsQuery, [user_roles.rows.map((item: QueryResultRow): string => item.id)]);
@@ -172,7 +179,20 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
             };
 
         } catch(err: any) {
-            request.log.error(err.message);
+            await fastify.db.query('ROLLBACK;');
+
+            if(err.severity != null && err.severity === 'ERROR') {
+                if(err.code === '23505') {
+                    if(err.detail.startsWith('Key (email)')) throw createError(400, 'A user with the email provided already exists....');
+                    if(err.detail.startsWith('Key (username)')) throw createError(400, 'A user with the username provided already exists....');
+                }
+
+                if(err.code === '23503') {
+                    if(err.detail.startsWith('Key (role_id)')) throw createError(400, 'Role values must be valid Ids...');
+                }
+            }
+
+            request.log.error(err);
             throw err;
         }
     });

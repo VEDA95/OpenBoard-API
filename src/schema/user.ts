@@ -20,7 +20,7 @@ export const AdminUserCreate = UserCreate.extend({
     email_verified: z.boolean().nullish(),
     reset_password_on_login: z.boolean().nullish(),
     external_provider_id: z.string().nullish(),
-    roles: z.array(z.string().uuid('Values must be valid Ids...')).nullish()
+    roles: z.array(z.string().uuid('Role values must be valid Ids...')).nullish()
 });
 
 export const AdminUserUpdate = UserUpdate.extend({
@@ -29,7 +29,7 @@ export const AdminUserUpdate = UserUpdate.extend({
     email_verified: z.boolean().nullish(),
     reset_password_on_login: z.boolean().nullish(),
     external_provider_id: z.string().nullish(),
-    roles: z.array(z.string().uuid('Values must be valid Ids...')).nullish()
+    roles: z.array(z.string().uuid('Role values must be valid Ids...')).nullish()
 });
 
 export const PublicUserCreate = UserCreate.extend({
