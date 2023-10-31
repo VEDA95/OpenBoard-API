@@ -56,9 +56,9 @@ export function parseRoles(role_data: QueryRows, permission_data: QueryResultRow
         const role: Role = {
             id: currentValue.id,
             name: currentValue.name,
-            permissions: permissions.map((item: Relation): Permission | void => {
-                if(item.ids.includes(currentValue.id)) return item.permission;
-            }) as Array<Permission>
+            permissions: permissions
+                            .filter((item: Relation): boolean => item.ids.includes(currentValue.id))
+                            .map((item: Relation): Permission => item.permission as Permission)
         };
 
         return [
