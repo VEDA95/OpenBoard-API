@@ -4,6 +4,7 @@ import { AdminUserCreate, AdminUserUpdate, UserParams } from '../../schema/user'
 import { parseUsers, parseUser } from '../../lib/db/parsers/user';
 import { hashPassword } from '../../lib/auth/password';
 import { createQuery, createManyToManyQuery } from '../../lib/db/queries/create';
+import { updateQuery, updateManyToMany } from '../../lib/db/queries/update';
 import { selectUsersQuery, selectUsersRolesQuery, selectRolesPermissionsQuery, selectUserQuery, selectUserRolesQuery, selectRolePermissionsQuery } from '../../lib/db/queries/user';
 import type { FastifyInstance, FastifyPluginOptions, FastifyRequest } from 'fastify';
 import type { DoneCallback } from '../../types/done';
@@ -202,18 +203,172 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
             params: zodToJsonSchema(UserParams, {errorMessages: true}),
             body: zodToJsonSchema(AdminUserUpdate, {errorMessages: true})
         }
-    }, async (request: FastifyRequest<{Body: AdminUserUpdateSchema}>, _): Promise<OKResponse<null>> => {
-        return {
-            code: 200,
-            data: null
-        };
+    }, async (request: FastifyRequest<{Params: UserParamsSchema, Body: AdminUserUpdateSchema}>, _): Promise<OKResponse<User>> => {
+        const { id } = request.params;
+        const {
+            username,
+            email,
+            first_name,
+            last_name,
+            password,
+            enabled,
+            reset_password_on_login,
+            email_verified,
+            external_provider_id,
+            roles,
+        } = request.body;
+        let columns: Array<string> = [];
+        let values: Array<string | boolean> = [id];
+
+        if(username != null && username.length > 0) {
+            columns = [...columns, 'username'];
+            values = [...values, username];
+        }
+
+        if(email != null && email.length > 0) {
+            columns = [...columns, 'email'];
+            values = [...values, email];
+        }
+
+        if(first_name != null && first_name.length > 0) {
+            columns = [...columns, 'first_name'];
+            values = [...values, first_name];
+        }
+
+        if(last_name != null && last_name.length > 0) {
+            columns = [...columns, 'last_name'];
+            values = [...values, last_name];
+        }
+
+        if(password != null && password.length > 8) {
+            columns = [...columns, 'hashed_password'];
+            values = [...values, await hashPassword(password)];
+        }
+
+        if(enabled != null) {
+            columns = [...columns, 'enabled'];
+            values = [...values, enabled];
+        }
+
+        if(reset_password_on_login != null) {
+            columns = [...columns, 'reset_password_on_login'];
+            values = [...values, reset_password_on_login];
+        }
+
+        if(email_verified != null) {
+            columns = [...columns, 'email_verified'];
+            values = [...values, email_verified];
+        }
+
+        if(external_provider_id != null && external_provider_id.length > 0) {
+            columns = [...columns, 'external_provider_id'];
+            values = [...values, external_provider_id];
+        }
+
+        if(values.length === 1) {
+            throw createError(400, 'Values to update must be provided...');
+        }
+
+        try {
+            await fastify.db.query('BEGIN;');
+            await fastify.db.query(updateQuery('open_board_user', 'id', columns), values);
+
+            if(roles != null) {
+                const userRolesQuery: QueryResult = await fastify.db.query(`
+                    SELECT role_id
+                    FROM open_board_user_roles
+                    WHERE user_id = $1;
+                `, [id]);
+                const currentUserRoles: Array<string> = userRolesQuery.rows.map((item: QueryResultRow): string => item.role_id);
+                const addUserRoles: Array<string> = roles.filter((item: string): boolean => !currentUserRoles.includes(item));
+                const removeUserRoles: Array<string> = currentUserRoles.filter((item: string): boolean => !roles.includes(item));
+                const [addRolesQuery, removeRolesQuery] = updateManyToMany('open_board_user_roles', 'user_id', 'role_id', addUserRoles.length, removeUserRoles.length);
+
+                if(addUserRoles.length > 0) {
+                    const addUserRolesQueryValues: Array<string> = addUserRoles.reduce((accumValue: Array<string>, currentValue: string): Array<string> => ([
+                        ...accumValue,
+                        id,
+                        currentValue
+                    ]), []);
+
+                    await fastify.db.query(addRolesQuery, addUserRolesQueryValues);
+                }
+
+                if(removeUserRoles.length > 0) await fastify.db.query(removeRolesQuery, [id, ...removeUserRoles]);
+            }
+
+            const userQuery: QueryResult = await fastify.db.query(selectUserQuery, [id]);
+            const userRoles: QueryResult = await fastify.db.query(selectUserRolesQuery, [id]);
+            const rolePermissions: QueryResult = await fastify.db.query(selectRolePermissionsQuery, [userRoles.rows.map((item: QueryResultRow): string => item.id)]);
+            const user: User = parseUser(userQuery.rows[0], userRoles.rows, rolePermissions.rows);
+
+            await fastify.db.query('COMMIT;');
+
+            return {
+                code: 200,
+                message: `User: ${user.username} has been updated successfully...`,
+                data: user
+            };
+
+        } catch(err: any) {
+            await fastify.db.query('ROLLBACK;');
+
+            if(err.severity != null && err.severity === 'ERROR') {
+                if(err.code === '23505') {
+                    if(err.detail.startsWith('Key (email)')) throw createError(400, 'A user with the email provided already exists....');
+                    if(err.detail.startsWith('Key (username)')) throw createError(400, 'A user with the username provided already exists....');
+                }
+
+                if(err.code === '23503') {
+                    if(err.detail.startsWith('Key (role_id)')) throw createError(400, 'Role values must be valid Ids...');
+                }
+            }
+
+            request.log.error(err);
+            throw err;
+        }
     });
 
-    fastify.delete('/users/:id', async (request: FastifyRequest<{Body: AdminUserUpdateSchema}>, _): Promise<OKResponse<null>> => {
-        return {
-            code: 200,
-            data: null
-        };
+    fastify.delete('/users/:id', {
+        schema: {
+            params: zodToJsonSchema(UserParams, { errorMessages: true })
+        }
+    }, async (request: FastifyRequest<{Params: UserParamsSchema}>, _): Promise<OKResponse<null>> => {
+        const { id } = request.params;
+
+        try {
+            await fastify.db.query('BEGIN;');
+
+            const usernameQuery: QueryResult = await fastify.db.query('SELECT username FROM open_board_user WHERE id = $1;', [id]);
+
+            await fastify.db.query('DELETE FROM open_board_user WHERE id = $1;', [id]);
+            await fastify.db.query('COMMIT;');
+
+            const { username } = usernameQuery.rows[0];
+
+            return {
+                code: 200,
+                message: `User: ${username} was successfully deleted!`,
+                data: null
+            };
+
+        } catch(err: any) {
+            await fastify.db.query('ROLLBACK;');
+
+            if(err.severity != null && err.severity === 'ERROR') {
+                if(err.code === '23505') {
+                    if(err.detail.startsWith('Key (email)')) throw createError(400, 'A user with the email provided already exists....');
+                    if(err.detail.startsWith('Key (username)')) throw createError(400, 'A user with the username provided already exists....');
+                }
+
+                if(err.code === '23503') {
+                    if(err.detail.startsWith('Key (role_id)')) throw createError(400, 'Role values must be valid Ids...');
+                }
+            }
+
+            request.log.error(err);
+            throw err;
+        }
     });
 
     done();
