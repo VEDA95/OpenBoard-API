@@ -119,16 +119,16 @@ CREATE TABLE IF NOT EXISTS "open_board_auth_settings" (
 );
 
 ALTER TABLE "open_board_user" ADD FOREIGN KEY ("thumbnail") REFERENCES "open_board_file_upload" ("id");
-ALTER TABLE "open_board_role_permissions" ADD FOREIGN KEY ("role_id") REFERENCES "open_board_role" ("id");
-ALTER TABLE "open_board_role_permissions" ADD FOREIGN KEY ("permission_id") REFERENCES "open_board_role_permission" ("id");
-ALTER TABLE "open_board_user_roles" ADD FOREIGN KEY ("role_id") REFERENCES "open_board_role" ("id");
-ALTER TABLE "open_board_user_roles" ADD FOREIGN KEY ("user_id") REFERENCES "open_board_user" ("id");
-ALTER TABLE "open_board_external_provider_roles" ADD FOREIGN KEY ("role_id") REFERENCES "open_board_role" ("id");
-ALTER TABLE "open_board_external_provider_roles" ADD FOREIGN KEY ("provider_id") REFERENCES "open_board_external_auth_provider" ("id");
-ALTER TABLE "open_board_user_session" ADD FOREIGN KEY ("user_id") REFERENCES "open_board_user" ("id");
-ALTER TABLE "open_board_multi_auth_method" ADD FOREIGN KEY ("user_id") REFERENCES "open_board_user" ("id");
-ALTER TABLE "open_board_user_password_reset_token" ADD FOREIGN KEY ("user_id") REFERENCES "open_board_user" ("id");
-ALTER TABLE "open_board_user_email_verification_token" ADD FOREIGN KEY ("user_id") REFERENCES "open_board_user" ("id");
+ALTER TABLE "open_board_role_permissions" ADD FOREIGN KEY ("role_id") REFERENCES "open_board_role" ("id") ON DELETE CASCADE;
+ALTER TABLE "open_board_role_permissions" ADD FOREIGN KEY ("permission_id") REFERENCES "open_board_role_permission" ("id") ON DELETE CASCADE;
+ALTER TABLE "open_board_user_roles" ADD FOREIGN KEY ("role_id") REFERENCES "open_board_role" ("id") ON DELETE CASCADE;
+ALTER TABLE "open_board_user_roles" ADD FOREIGN KEY ("user_id") REFERENCES "open_board_user" ("id") ON DELETE CASCADE;
+ALTER TABLE "open_board_external_provider_roles" ADD FOREIGN KEY ("role_id") REFERENCES "open_board_role" ("id") ON DELETE CASCADE;
+ALTER TABLE "open_board_external_provider_roles" ADD FOREIGN KEY ("provider_id") REFERENCES "open_board_external_auth_provider" ("id") ON DELETE CASCADE;
+ALTER TABLE "open_board_user_session" ADD FOREIGN KEY ("user_id") REFERENCES "open_board_user" ("id") ON DELETE CASCADE;
+ALTER TABLE "open_board_multi_auth_method" ADD FOREIGN KEY ("user_id") REFERENCES "open_board_user" ("id") ON DELETE CASCADE;
+ALTER TABLE "open_board_user_password_reset_token" ADD FOREIGN KEY ("user_id") REFERENCES "open_board_user" ("id") ON DELETE CASCADE;
+ALTER TABLE "open_board_user_email_verification_token" ADD FOREIGN KEY ("user_id") REFERENCES "open_board_user" ("id") ON DELETE CASCADE;
 ALTER TABLE "open_board_user" ADD FOREIGN KEY ("external_provider_id") REFERENCES "open_board_external_auth_provider" ("id");
 
 CREATE UNIQUE INDEX one_row_only_uidx ON "open_board_auth_settings" (( true ));
