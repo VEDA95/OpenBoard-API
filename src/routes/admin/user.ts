@@ -265,13 +265,18 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
             values = [...values, external_provider_id];
         }
 
-        if(values.length === 1) {
+        if(values.length === 1 && roles == null) {
             throw createError(400, 'Values to update must be provided...');
         }
 
         try {
             await fastify.db.query('BEGIN;');
-            await fastify.db.query(updateQuery('open_board_user', 'id', columns), values);
+
+            if(values.length > 1) {
+               const updateResult: QueryResult = await fastify.db.query(updateQuery('open_board_user', 'id', columns), values);
+
+               if(updateResult.rowCount === 0) throw createError(404, 'No user with the provided id exists...');
+            }
 
             if(roles != null) {
                 const userRolesQuery: QueryResult = await fastify.db.query(`
@@ -341,6 +346,8 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
 
             const usernameQuery: QueryResult = await fastify.db.query('SELECT username FROM open_board_user WHERE id = $1;', [id]);
 
+            if(usernameQuery.rowCount === 0) throw createError(404, 'No user with the provided id exists...')
+
             await fastify.db.query('DELETE FROM open_board_user WHERE id = $1;', [id]);
             await fastify.db.query('COMMIT;');
 
@@ -354,18 +361,6 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
 
         } catch(err: any) {
             await fastify.db.query('ROLLBACK;');
-
-            if(err.severity != null && err.severity === 'ERROR') {
-                if(err.code === '23505') {
-                    if(err.detail.startsWith('Key (email)')) throw createError(400, 'A user with the email provided already exists....');
-                    if(err.detail.startsWith('Key (username)')) throw createError(400, 'A user with the username provided already exists....');
-                }
-
-                if(err.code === '23503') {
-                    if(err.detail.startsWith('Key (role_id)')) throw createError(400, 'Role values must be valid Ids...');
-                }
-            }
-
             request.log.error(err);
             throw err;
         }

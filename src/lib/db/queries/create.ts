@@ -14,7 +14,7 @@ export function createManyToManyQuery(table_name: string, id_name_1: string, id_
         const index2: number = index + 2;
 
         valuesTemplate += `($${index1}, $${index2})`;
-        valuesTemplate += index === (valueLength - 2) ? ';' : ',';
+        valuesTemplate += index === (indexLimit - 1) ? ';' : ',';
     }
 
     return `INSERT INTO ${table_name} (${id_name_1}, ${id_name_2}) VALUES ${valuesTemplate}`;
