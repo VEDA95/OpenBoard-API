@@ -51,6 +51,9 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
             await fastify.db.query('BEGIN;');
 
             const user_query: QueryResult = await fastify.db.query(selectUserQuery, [id]);
+
+            if(user_query.rowCount === 0) throw createError(404, 'No user with the provided id exists...');
+
             const user_roles_query: QueryResult = await fastify.db.query(selectUserRolesQuery, [id]);
             const role_permissions_query: QueryResult = await fastify.db.query(selectRolePermissionsQuery, [user_roles_query.rows.map((item: QueryResultRow): string => item.id)]);
 
