@@ -94,6 +94,8 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
             values = [...values, path];
         }
 
+        if(values.length === 1) throw createError(400, 'Values to update must be provided...');
+
         try {
             await fastify.db.query('BEGIN;');
 
