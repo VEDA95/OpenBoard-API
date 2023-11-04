@@ -1,5 +1,6 @@
 import fp from 'fastify-plugin';
 import userRoutes from './user';
+import permissionRoutes from './permission';
 import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
 import type { DoneCallback } from '../../types/done';
 
@@ -8,5 +9,6 @@ export default fp((fastify: FastifyInstance, options: FastifyPluginOptions, done
     const { prefix }: FastifyPluginOptions = options;
 
     fastify.register(userRoutes, { prefix: prefix });
+    fastify.register(permissionRoutes, { prefix: prefix });
     done();
 });
