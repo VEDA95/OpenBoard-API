@@ -220,8 +220,8 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
             external_provider_id,
             roles,
         } = request.body;
-        let columns: Array<string> = [];
-        let values: Array<string | boolean> = [id];
+        let columns: Array<string> = ['date_updated'];
+        let values: Array<string | boolean | Date> = [id, new Date()];
 
         if(username != null && username.length > 0) {
             columns = [...columns, 'username'];
@@ -268,14 +268,14 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
             values = [...values, external_provider_id];
         }
 
-        if(values.length === 1 && roles == null) {
+        if(values.length === 2 && roles == null) {
             throw createError(400, 'Values to update must be provided...');
         }
 
         try {
             await fastify.db.query('BEGIN;');
 
-            if(values.length > 1) {
+            if(values.length > 2) {
                const updateResult: QueryResult = await fastify.db.query(updateQuery('open_board_user', 'id', columns), values);
 
                if(updateResult.rowCount === 0) throw createError(404, 'No user with the provided id exists...');
@@ -349,7 +349,7 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
 
             const usernameQuery: QueryResult = await fastify.db.query('SELECT username FROM open_board_user WHERE id = $1;', [id]);
 
-            if(usernameQuery.rowCount === 0) throw createError(404, 'No user with the provided id exists...')
+            if(usernameQuery.rowCount === 0) throw createError(404, 'No user with the provided id exists...');
 
             await fastify.db.query('DELETE FROM open_board_user WHERE id = $1;', [id]);
             await fastify.db.query('COMMIT;');
