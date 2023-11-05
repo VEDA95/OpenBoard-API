@@ -1,16 +1,8 @@
-import type { User, Permission, Role } from '../../../types/user';
+import type { User, Permission, Role, Relation, RelationArray } from '../../../types/user';
+import type { QueryRows } from '../../../types/query';
 import type { QueryResultRow } from 'pg';
 
-interface Relation {
-    role?: Role;
-    permission?: Permission;
-    ids: Array<string>;
-}
-
-type QueryRows = Array<QueryResultRow>;
-type RelationArray = Array<Relation>;
-
-export function parseRoles(role_data: QueryRows, permission_data: QueryResultRow): RelationArray {
+export function parseUserRoles(role_data: QueryRows, permission_data: QueryRows): RelationArray {
     const permissions: RelationArray = permission_data.reduce((accumValue: RelationArray, currentValue: QueryResultRow): RelationArray => {
         const relationMatch: Relation | undefined = accumValue.find((item: Relation): boolean => item.permission?.id === currentValue.id);
 
@@ -72,7 +64,7 @@ export function parseRoles(role_data: QueryRows, permission_data: QueryResultRow
 }
 
 export function parseUsers(user_data: QueryRows, role_data: QueryRows, permission_data: QueryRows): Array<User> {
-    const roles: RelationArray = parseRoles(role_data, permission_data);
+    const roles: RelationArray = parseUserRoles(role_data, permission_data);
 
     return user_data.map((item: QueryResultRow): User => ({
         id: item.usr_id,
@@ -94,7 +86,7 @@ export function parseUsers(user_data: QueryRows, role_data: QueryRows, permissio
 }
 
 export function parseUser(user_data: QueryResultRow, role_data: QueryRows, permission_data: QueryRows): User {
-    const roles: RelationArray = parseRoles(role_data, permission_data);
+    const roles: RelationArray = parseUserRoles(role_data, permission_data);
 
     return {
         id: user_data.usr_id,

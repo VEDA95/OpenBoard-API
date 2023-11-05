@@ -87,7 +87,7 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
         const { path } = request.body;
 
         let columns: Array<string> = [];
-        let values: Array<string | boolean | Date> = [id];
+        let values: Array<string | boolean> = [id];
 
         if(path != null) {
             columns = [...columns, 'path'];

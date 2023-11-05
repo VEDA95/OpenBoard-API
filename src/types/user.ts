@@ -1,4 +1,3 @@
-
 export interface Permission {
     id: string;
     path: string;
@@ -25,3 +24,12 @@ export interface User {
     external_provider: null;
     roles: Array<Role>;
 }
+
+export interface Relation {
+    role?: Role;
+    permission?: Permission;
+    ids: Array<string>;
+}
+
+
+export type RelationArray = Array<Relation>;
