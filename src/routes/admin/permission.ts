@@ -72,6 +72,13 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
 
         } catch(err: any) {
             await fastify.db.query('ROLLBACK;');
+
+            if(err.severity != null && err.severity === 'ERROR') {
+                if(err.code === '23505') {
+                    if(err.detail.startsWith('Key (path)')) throw createError(400, 'A permission with the path provided already exists...');
+                }
+            }
+
             request.log.error(err);
             throw err;
         }
@@ -116,6 +123,13 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
 
         } catch(err: any) {
             await fastify.db.query('ROLLBACK;');
+
+            if(err.severity != null && err.severity === 'ERROR') {
+                if(err.code === '23505') {
+                    if(err.detail.startsWith('Key (path)')) throw createError(400, 'A permission with the path provided already exists...');
+                }
+            }
+
             request.log.error(err);
             throw err;
         }

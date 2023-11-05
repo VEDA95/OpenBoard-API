@@ -329,6 +329,7 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
 
                 if(err.code === '23503') {
                     if(err.detail.startsWith('Key (role_id)')) throw createError(400, 'Role values must be valid Ids...');
+                    if(err.detail.startsWith('Key (user_id)')) throw createError(404, 'No user with the provided id exists...');
                 }
             }
 

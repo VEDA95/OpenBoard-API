@@ -22,7 +22,7 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
 
             await fastify.db.query('COMMIT;');
 
-           const roles: Array<Role> = parseRoles(rolesQuery.rows, permissionsQuery.rows);
+            const roles: Array<Role> = parseRoles(rolesQuery.rows, permissionsQuery.rows);
 
             return {
                 code: 200,
@@ -110,6 +110,13 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
 
         } catch(err: any) {
             await fastify.db.query('ROLLBACK;');
+
+            if(err.severity != null && err.severity === 'ERROR') {
+                if(err.code === '23505') {
+                    if(err.detail.startsWith('Key (name)')) throw createError(400, 'A Role with the name provided already exists...');
+                }
+            }
+
             request.log.error(err);
             throw err;
         }
@@ -182,6 +189,18 @@ export default (fastify: FastifyInstance, _: FastifyPluginOptions, done: DoneCal
 
         } catch(err: any) {
             await fastify.db.query('ROLLBACK;');
+
+            if(err.severity != null && err.severity === 'ERROR') {
+                if(err.code === '23505') {
+                    if(err.detail.startsWith('Key (name)')) throw createError(400, 'A Role with the name provided already exists...');
+                }
+
+                if(err.code === '23503') {
+                    if(err.detail.startsWith('Key (permission_id)')) throw createError(400, 'Permission values must be valid Ids...');
+                    if(err.detail.startsWith('Key (role_id)')) throw createError(404, 'No role with the provided id exists...');
+                }
+            }
+
             request.log.error(err);
             throw err;
         }
