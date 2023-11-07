@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS "open_board_user_email_verification_token" (
 
 CREATE TABLE IF NOT EXISTS "open_board_external_auth_provider" (
   "id" UUID UNIQUE PRIMARY KEY DEFAULT uuid_generate_v4(),
-  "name" VARCHAR(255) NOT NULL,
+  "name" VARCHAR(255) UNIQUE NOT NULL,
   "date_created" TIMESTAMP NOT NULL DEFAULT now(),
   "date_updated" TIMESTAMP,
   "client_id" VARCHAR(255) NOT NULL,
@@ -108,6 +108,7 @@ CREATE TABLE IF NOT EXISTS "open_board_external_auth_provider" (
   "userinfo_url" VARCHAR(255) NOT NULL,
   "logout_url" VARCHAR(255),
   "default_login_method" BOOLEAN NOT NULL DEFAULT FALSE,
+  "enabled" BOOLEAN NOT NULL DEFAULT TRUE,
   "self_registration_enabled" BOOLEAN NOT NULL DEFAULT FALSE,
   "required_email_domain" VARCHAR(255)
 );
